@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+  <session-factory>
+      <property name="connection.url"> jdbc:postgresql://aws-1-eu-west-1.pooler.supabase.com:5432/postgres</property>
+      <property name="connection.driver_class">org.postgresql.Driver</property>
+      <property name="connection.username">postgres.hejarhufogoypiwzcfsk</property>
+      <property name="connection.password">ukn5JR0n8QahbiPe</property>
+      <property name="default_schema">_da_vtschool_2526</property>
+      <mapping class="org.example.Student"/>
+      <mapping class="org.example.Cours"/>
+      <mapping class="org.example.Enrollment"/>
+      <mapping class="org.example.Score"/>
+      <mapping class="org.example.SubjectCours"/>
+      <mapping class="org.example.Subject"/>
+    <!-- DB schema will be updated if needed -->
+    <!-- <property name="hibernate.hbm2ddl.auto">update</property> -->
+  </session-factory>
+</hibernate-configuration>

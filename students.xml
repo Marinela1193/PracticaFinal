@@ -1,0 +1,16 @@
+<vtinstitute>
+    <students>
+        <student>
+            <idcard>19828233</idcard>
+            <firstname>Jose</firstname>
+            <lastname>García</lastname>
+            <email>jrgarcia@iesmarenostrum.com</email>
+            <phone>616116611</phone>
+        </student>
+        <student>
+            <idcard>19802233</idcard>
+            <firstname>Antonio</firstname>
+            <lastname>Luque</lastname>
+        </student>
+    </students>
+</vtinstitute>
