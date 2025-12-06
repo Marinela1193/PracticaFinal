@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StudentXmlParser extends DefaultHandler {
-    /* DefaultHandler maneja la gran mayoría de eventos */
+
     protected String tagContent;
 
 
-    //Añadimos Las clases a este nivel para ser usadas a nivel global en la clase
+    //we declare both so we can use them globally
     private List<Student> students;
     private Student currentStudent;
 
@@ -32,33 +32,32 @@ public class StudentXmlParser extends DefaultHandler {
         this.students = students;
     }
 
-    //Este metodo devolverá la lista de Students
+    //This method will return the students' list
     public List<Student> getStudentList() {
         return this.students;
     }
 
-    //Iniciamos evento cuando se lee una etiqueta de apertura para crear un objeto de tipo Student.
-    // En este caso usamos la etiqueta <student>
+    //We start when we read an opening tag to create the object student
+    //so in order to create the student we look for the tag that contains all information
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         if (qName.equals("student")) {
             currentStudent = new Student();
         }
     }
 
-    //Devuelve el contenido/valor de la etiqueta. <etiqueta>contenido</etiqueta>
-    //
+    //Returns the content within the tags
     public void characters(char ch[], int start, int length)
             throws SAXException {
         tagContent = new String(ch, start, length);
     }
 
-    //metodo para ejecutarse cuando una etiqueta se cierre
+    //method that will execute when the tag is of closure
     public void endElement(String uri, String localName, String qName)
             throws SAXException {
         if (currentStudent != null) {
-            //Hasta que el objeto Student no se haya creado, no se deben disparar estos eventos de etiquetas
+
             switch (qName.toLowerCase()) {
-                //Para las etiqueta de dentro de student setteamos su atributo
+                //we set the attributes that will have the student's information
                 case "idcard":
                     currentStudent.setIdcard(tagContent);
                     break;
@@ -74,34 +73,39 @@ public class StudentXmlParser extends DefaultHandler {
                 case "phone":
                     currentStudent.setPhone(tagContent);
                     break;
-                //Para el caso Student, al ser una etiqueta de cierre (por tanto se han setteado todos los atributos de esa registro
-                //Añadimos el elemento a la Lista de Students y reiniciamos el objeto Student.
+                //when we find the end tag of student, this means that we have all information of this student
+                //we save the student within the object Student
+                //we reset the information to add a new student
                 case "student":
-                    System.out.println(currentStudent);
-                    students.add(currentStudent);
-                    currentStudent = null;
+                    if(currentStudent.getIdcard().length()==8) {
+                        students.add(currentStudent);
+                        currentStudent = null;
+                    }else{
+                        throw new RuntimeException("The IDCARD must have 8 characteres. No Students added");
+                    }
                     break;
             }
         }
     }
 
-    //metodo que llamamos desde un nivel superior (main para este ejemplo) para leer el fichero y rellenar la Lista de Students
-    List<Student> leer(String fichero) {
+    List<Student> read(String file) throws RuntimeException {
         try {
-            //Invocamos el parser
+            //we call the parser
             SAXParser saxParser = SAXParserFactory.
                     newInstance().newSAXParser();
 
-            //Parseamos el fichero que le pasamos por ruta
+            //we parse the file that we indicate in route
 
-            saxParser.parse(fichero, this);
+            saxParser.parse(file, this);
             return this.getStudents();
+        }catch (RuntimeException e) {
+            System.err.println(e.getMessage());
         }catch (FileNotFoundException e){
-            System.err.println("Fichero no encontrado");
+            System.err.println("File not found");
         } catch (Exception e ) {
             e.printStackTrace();
         }
-        //Devolvemos los estudiantes
+        //we return the students
         return getStudentList();
     }
 

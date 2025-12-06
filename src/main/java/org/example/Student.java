@@ -114,13 +114,11 @@ public class Student {
     }
 
     public boolean exists() {
-        List<Student> studentList = this.getStudents();
-        for(Student student : studentList){
-            if(student.getIdcard().equals(this.idcard)){
-                return true;
-            }
+        try(Session session = SessionFactory.getSessionFactory().openSession()){
+            Student student = getStudentByIdcard(this.idcard);
+
+            return student != null;
         }
-        return false;
     }
 
     public boolean existsId(String idCard){
@@ -128,43 +126,24 @@ public class Student {
     }
 
 
-    public void addToDatabase() {
-
-        Transaction transaction;
-
-        try (Session session = SessionFactory.getSessionFactory().openSession()) {
-
-            transaction = session.beginTransaction();
-
-            if (!checkEmail(this.getEmail())) {
-                System.out.println("Invalid email");
-                return;
-            }
-
-            if (!checkPhoneNumber(this.getPhone())) {
-                System.out.println("Invalid phone number");
-                return;
-            }
-
-            session.persist(this);
-            transaction.commit();
-
-            System.out.println("Student added correctly");
-
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    public boolean checkEmail(){
+        try {
+            String check = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+            return this.email.matches(check);
+        } catch (RuntimeException e) {
+            throw new RuntimeException(this.getFirstname() + " has no valid email");
         }
     }
 
-    public boolean checkEmail(String email){
-        email = this.email;
-        String check = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
-        return email.matches(check);
-
+    public boolean checkPhoneNumber(){
+        try{
+            return this.phone.matches("\\d{9}");
+        }catch (RuntimeException e) {
+            throw new RuntimeException(this.getFirstname() + " has no valid phone number");
+        }
     }
 
-    public boolean checkPhoneNumber(String number){
-        return phone.matches("\\d{9}");
+    public boolean checkIdCard(){
+      return this.idcard.length() == 8;
     }
 }

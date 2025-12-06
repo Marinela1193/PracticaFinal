@@ -1,6 +1,9 @@
 package org.example;
 
 import jakarta.persistence.*;
+import org.hibernate.Session;
+
+import java.util.List;
 
 @Entity
 @Table(name = "scores", schema = "_da_vtschool_2526")
