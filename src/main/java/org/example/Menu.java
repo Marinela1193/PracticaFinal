@@ -73,11 +73,11 @@ public class Menu {
         //we declare a list were the students will be added
         List<Student> studentsXML = myXMLStudentsHandler.leer(filename);
 
-        //we print the list
+        /*we print the list
         System.out.println("Students list " + studentsXML.size());
         for (Student student : studentsXML) {
             System.out.println(student);
-        }
+        }*/
 
         for (Student student : studentsXML) {
             if (!student.exists()) {

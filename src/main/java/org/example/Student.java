@@ -102,6 +102,17 @@ public class Student {
         return null;
     }
 
+    public Student getStudentByIdcard(String idCard) {
+        try(Session session = SessionFactory.getSessionFactory().openSession()){
+            Query myQuery = session.createQuery("SELECT s FROM Student s WHERE s.idcard = :idCard");
+            myQuery.setParameter("idCard", idcard);
+            return Student.class.cast(myQuery.getSingleResult());
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+
     public boolean exists() {
         List<Student> studentList = this.getStudents();
         for(Student student : studentList){
@@ -111,6 +122,11 @@ public class Student {
         }
         return false;
     }
+
+    public boolean existsId(String idCard){
+        return getStudentByIdcard(idCard) != null;
+    }
+
 
     public void addToDatabase() {
 
