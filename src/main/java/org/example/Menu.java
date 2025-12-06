@@ -3,6 +3,7 @@ package org.example;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import java.sql.SQLOutput;
 import java.util.List;
 import java.util.Scanner;
 
@@ -74,7 +75,6 @@ public class Menu {
                 break;
         }
     }
-
 
     public static void helpScreen() {
 
@@ -186,32 +186,102 @@ public class Menu {
     public static void enrollStudent(String idCard, int idCourse) {
         /*The -e / --enroll option will enroll an existing student (idCard must be provided)
         in an existing course. */
-        try (Session session = SessionFactory.getSessionFactory().openSession()) {}
-            //comprobamos que idCard es valido
-            //comprobamos si idCard existe
+        Transaction transaction = null;
+        try (Session session = SessionFactory.getSessionFactory().openSession()) {
 
-            //comprobar si el course existe en la BD
+            //check that the IDCard is valid
+            Student student = new Student();
+            if (!student.checkIdCard()) {
+                System.err.println("IDCARD:  " + idCard + " is invalid, it must have 8 characteres.");
+                return;
+            }
+            //check the IDCard exists
+            if (!student.existsId(idCard)) {
+                System.err.println("IDCARD:  " + idCard + " does not exist in the system");
+                return;
+            }
 
+            //check the IDCours exists
+            Cours course = new Cours();
+            if (!course.checkCourse(idCourse)) {
+                System.err.println("IDCourse: " + idCourse + " does not exist in the system.");
+                return;
+            }
+
+            //check if student has completed the course
+            /*if (student.completedCourse(idCard, idCourse)) {
+                System.err.println("The student has already completed this course and cannot enroll again.");
+                return;
+            }*/
+            //check table enrollments has id and course
+            Enrollment enrollment = new Enrollment();
+            Subject subject = new Subject();
+            Score score = new Score();
+            transaction = session.beginTransaction();
+
+            if (!enrollment.checkEnrollment(idCard, idCourse)) {
+                System.err.println("IDCard: " + idCard + " does not exist in the Course: " + idCourse + " we will proceed to enroll the student in the first year");
+
+                enrollment.createEnrollment(idCard, idCourse);
+
+                List<Subject> subjectsToEnroll = subject.getSubjectsFirstYear(idCourse);
+
+                for (Subject s : subjectsToEnroll) {
+                    score.createScore();
+                }
+            } else {
+
+                List<Subject> passedSubjects = subject.getSubjectsPassed(idCard);
+                int count = 0;
+                for (Subject s : passedSubjects) {
+                    count++;
+                }
+
+                if (count == 5) {
+                    System.out.println("The student has already passed the course");
+                    return;
+                } else {
+                    List<Subject> failedSubjects = subject.getSubjectsFailed(idCard);
+
+                    for (Subject s : failedSubjects) {
+                        score.createScore();
+                    }
+
+                    List<Subject> secondYearSubjects = subject.getSubjectsSecondYear(idCourse);
+                    for (Subject s : secondYearSubjects) {
+                        score.createScore();
+                    }
+                }
+                transaction.commit();
+                System.out.println("The student has been enrolled in the subjects failed and 2nd year subjects");
+            }
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            System.err.println("Error during enrollment: " + e.getMessage());
+        }
+
+    }
 
 
         /*The student can only be enrolled in one course in a specific
         academic year.*/
 
-        //comprobar que en la tabla enrollments tenga ese ID con ese curso
-        //Opcion1. No está matriculado en nada.
+            //Opcion1. No está matriculado en nada.
             //1. Crear registro en enrollments
             //2. Extraes las asignaturas de primer año de curso buscado
-                //devuelve lista asignaturas y hacemos bucle por cada asignatura generamos registro en Scores
+            //devuelve lista asignaturas y hacemos bucle por cada asignatura generamos registro en Scores
             /*The first year the student enrolls in a course, the system must register
             every subject in the first year as enrolled.
             For example, if the student is enrolling in DAW,
             five modules should be added to the table scores.*/
-        //Opcion2. El alumno está matriculado en ese curso.
+            //Opcion2. El alumno está matriculado en ese curso.
             //1. Recoger asignaturas suspensas
             //2. Añadir las asignaturas de segundo a la tabla scores
-        //PASA DE CURSO CON ASIGNATURAS PENDIENTES Y RECIBE LAS ASIGNATURAS NUEVAS DE 2
-        //Opcion3. El alumno está matriculado en otro curso ya no podemos seguir.
-        //Opcion4. El alumno ha completado ese curso, no puede matricularse
+            //PASA DE CURSO CON ASIGNATURAS PENDIENTES Y RECIBE LAS ASIGNATURAS NUEVAS DE 2
+            //Opcion3. El alumno está matriculado en otro curso ya no podemos seguir.
+            //Opcion4. El alumno ha completado ese curso, no puede matricularse
 
         /*The following years the student may enroll the second-year subjects and every subject
         not passed in the first year. */
@@ -227,33 +297,41 @@ public class Menu {
         be name like: subjects_passed_jrgs_2526. The functions will be delivered in a text
         file included in your project (stored_functions.txt). Not including this file will imply
         a zero-score in the corresponding qualification item.*/
-    }
+ 
 
-    public static void introScores(String idCard, int idCourse) {
+        public static void introScores (String idCard,int idCourse){
 
-        try (Session session = SessionFactory.getSessionFactory().openSession()) {
-//            Scanner sc = new Scanner(System.in);
-
-            //We call the student we are about to update the scores
-            Student student = (Student) session.find(Student.class, idCard);
-
-            if (student == null) {
-                System.err.println("Student with ID " + idCard + " not found");
+            Student student = new Student();
+            if (!student.checkIdCard()) {
+                System.err.println("IDCARD:  " + idCard + " is invalid, it must have 8 characteres.");
                 return;
             }
+            //check the IDCard exists
+            if (!student.existsId(idCard)) {
+                System.err.println("IDCARD:  " + idCard + " does not exist in the system");
+            }
 
-            //We create a list of the subjects this student is enrolled and
-            ScoreMethods scoreMethods = new ScoreMethods();
-            List <Score> scoresStudent = scoreMethods.getScores(idCard);
-            scoreMethods.addScores(session, scoresStudent);
+            //check the IDCours exists
+            Cours course = new Cours();
+            if (!course.checkCourse(idCourse)) {
+                System.err.println("IDCourse: " + idCourse + " does not exist in the system.");
+            }
 
-            System.out.println("All scores updated successfully.");
+            try (Session session = SessionFactory.getSessionFactory().openSession()) {
+//            Scanner sc = new Scanner(System.in);
 
-        } catch (Exception e) {
-            e.printStackTrace();
+                //We create a list of the subjects this student is enrolled and
+                ScoreMethods scoreMethods = new ScoreMethods();
+                List<Score> scoresStudent = scoreMethods.getScores(idCard);
+                scoreMethods.addScores(session, scoresStudent);
+
+                System.out.println("All scores updated successfully.");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
-}
 
 
             /*List<Score> subjectsToScore = session.createQuery(

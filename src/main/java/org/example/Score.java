@@ -2,6 +2,7 @@ package org.example;
 
 import jakarta.persistence.*;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import java.util.List;
 
@@ -55,5 +56,23 @@ public class Score {
     public void setScore(Integer score) {
         this.score = score;
     }
+
+    public void createScore() {
+        Transaction transaction = null;
+        try (Session session = SessionFactory.getSessionFactory().openSession()) {
+            Score score = new Score();
+            score.setEnrollment(enrollment);
+            score.setSubject(subject);
+            score.setScore(null);
+            session.persist(score);
+            transaction.commit();
+        }catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            System.err.println("Error creating score: " + e.getMessage());
+        }
+    }
+
 
 }

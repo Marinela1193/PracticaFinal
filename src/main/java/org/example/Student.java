@@ -146,4 +146,21 @@ public class Student {
     public boolean checkIdCard(){
       return this.idcard.length() == 8;
     }
+
+    public boolean completedCourse(String idCard, int courseId) {
+        try (Session session = SessionFactory.getSessionFactory().openSession()) {
+            Long count = session.createQuery(
+                            "SELECT COUNT(s) FROM Subject s WHERE s.course.id = :courseId AND " +
+                                    "s.id NOT IN (SELECT sc.subject.id FROM Score sc WHERE sc.student.idcard = :studentId AND sc.score >= 5)",
+                            Long.class)
+                    .setParameter("courseId", courseId)
+                    .setParameter("studentId", idCard)
+                    .uniqueResult();
+
+            return count != null && count == 0;
+        } catch (Exception e) {
+            System.err.println("Error checking if student completed course: " + e.getMessage());
+            return false;
+        }
+    }
 }

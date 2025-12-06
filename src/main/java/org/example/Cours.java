@@ -1,8 +1,10 @@
 package org.example;
 
 import jakarta.persistence.*;
+import org.hibernate.Session;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -52,6 +54,35 @@ public class Cours {
 
     public void setSubjectCourses(Set<SubjectCours> subjectCourses) {
         this.subjectCourses = subjectCourses;
+    }
+
+    public boolean checkCourse(int coursCode) {
+        try (Session session = SessionFactory.getSessionFactory().openSession()) {
+
+            Long count = session.createQuery(
+                            "SELECT COUNT(c) FROM Cours c WHERE c.id = :code", Long.class)
+                    .setParameter("code", coursCode)
+                    .uniqueResult();
+
+            return count != null && count > 0;
+
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int getTotalSubjects(int courseId) {
+        try (Session session = SessionFactory.getSessionFactory().openSession()) {
+            Long count = session.createQuery(
+                            "SELECT COUNT(sc.subject) FROM SubjectCours sc WHERE sc.course.id = :courseId", Long.class)
+                    .setParameter("courseId", courseId)
+                    .uniqueResult();
+
+            return count != null ? count.intValue() : 0;
+        } catch (RuntimeException e) {
+            System.err.println("Error getting total subjects: " + e.getMessage());
+            return 0;
+        }
     }
 
 }

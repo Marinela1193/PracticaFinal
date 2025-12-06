@@ -1,8 +1,10 @@
 package org.example;
 
 import jakarta.persistence.*;
+import org.hibernate.Session;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -76,4 +78,54 @@ public class Subject {
         this.subjectCourses = subjectCourses;
     }
 
+    public List<Subject> getSubjectsFirstYear(int courseId) {
+        try (Session session = SessionFactory.getSessionFactory().openSession()) {
+            return session.createQuery("SELECT sc.subject FROM SubjectCours sc WHERE sc.course.id = :courseId AND sc.subject.year = 1", Subject.class)
+            .setParameter("courseId", courseId)
+                    .getResultList();
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
+    public List<Subject> getSubjectsSecondYear(int courseId) {
+        try (Session session = SessionFactory.getSessionFactory().openSession()) {
+            return session.createQuery("SELECT sc.subject FROM SubjectCours sc WHERE sc.course.id = :courseId AND sc.subject.year = 2", Subject.class)
+                    .setParameter("courseId", courseId)
+                    .getResultList();
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
+    public List<Subject> getSubjectsFailed(String idCard) {
+        try (Session session = SessionFactory.getSessionFactory().openSession()) {
+            return  session.createNativeQuery(
+                    "SELECT * FROM subjectsPending_mps_2526(:studentId)"
+            ).setParameter("studentId", id)
+                    .getResultList();
+        }
+    }
+
+    public List<Subject> getSubjectsPassed(String idCard) {
+        try (Session session = SessionFactory.getSessionFactory().openSession()) {
+            return  session.createNativeQuery(
+                            "SELECT * FROM subjectsPassed_mps_2526(:studentId)"
+                    ).setParameter("studentId", id)
+                    .getResultList();
+        }
+    }
+
+    public List<Subject> subjectsStudentIsEnrolled(String idCard) {
+        try (Session session = SessionFactory.getSessionFactory().openSession()) {
+            return session.createQuery("SELECT sc.subject FROM SubjectCours sc WHERE ", Subject.class)
+                    .setParameter("courseId", idCard)
+                    .getResultList();
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
 }
