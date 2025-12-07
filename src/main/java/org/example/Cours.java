@@ -60,7 +60,9 @@ public class Cours {
         try (Session session = SessionFactory.getSessionFactory().openSession()) {
 
             Long count = session.createQuery(
-                            "SELECT COUNT(c) FROM Cours c WHERE c.id = :code", Long.class)
+                            "SELECT COUNT(c) " +
+                                    "FROM Cours c " +
+                                    "WHERE c.id = :code", Long.class)
                     .setParameter("code", coursCode)
                     .uniqueResult();
 
@@ -74,7 +76,9 @@ public class Cours {
     public int getTotalSubjects(int courseId) {
         try (Session session = SessionFactory.getSessionFactory().openSession()) {
             Long count = session.createQuery(
-                            "SELECT COUNT(sc.subject) FROM SubjectCours sc WHERE sc.course.id = :courseId", Long.class)
+                            "SELECT COUNT(sc.subject) " +
+                                    "FROM SubjectCours sc " +
+                                    "WHERE sc.course.id = :courseId", Long.class)
                     .setParameter("courseId", courseId)
                     .uniqueResult();
 

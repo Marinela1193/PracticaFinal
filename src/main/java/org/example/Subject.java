@@ -91,7 +91,10 @@ public class Subject {
 
     public List<Subject> getSubjectsSecondYear(int courseId) {
         try (Session session = SessionFactory.getSessionFactory().openSession()) {
-            return session.createQuery("SELECT sc.subject FROM SubjectCours sc WHERE sc.course.id = :courseId AND sc.subject.year = 2", Subject.class)
+            return session.createQuery("SELECT sc.subject " +
+                    "FROM SubjectCours sc " +
+                    "WHERE sc.course.id = :courseId " +
+                    "AND sc.subject.year = 2", Subject.class)
                     .setParameter("courseId", courseId)
                     .getResultList();
         }catch (Exception e) {
@@ -104,7 +107,8 @@ public class Subject {
         try (Session session = SessionFactory.getSessionFactory().openSession()) {
             return  session.createNativeQuery(
                     "SELECT * FROM subjectsPending_mps_2526(:studentId)"
-            ).setParameter("studentId", id)
+            ).setParameter("studentId", idCard)
+                    .addEntity(Subject.class)
                     .getResultList();
         }
     }
@@ -113,15 +117,23 @@ public class Subject {
         try (Session session = SessionFactory.getSessionFactory().openSession()) {
             return  session.createNativeQuery(
                             "SELECT * FROM subjectsPassed_mps_2526(:studentId)"
-                    ).setParameter("studentId", id)
+                    ).setParameter("studentId", idCard)
+                    .addEntity(Subject.class)
                     .getResultList();
         }
     }
 
     public List<Subject> subjectsStudentIsEnrolled(String idCard) {
         try (Session session = SessionFactory.getSessionFactory().openSession()) {
-            return session.createQuery("SELECT sc.subject FROM SubjectCours sc WHERE ", Subject.class)
-                    .setParameter("courseId", idCard)
+            return session.createQuery(
+                            "SELECT sub " +
+                                    "FROM Subject sub " +
+                                    "JOIN sub.scores s " +
+                                    "JOIN s.enrollment e " +
+                                    "JOIN e.student st " +
+                                    "WHERE st.idcard = :studentId",
+                            Subject.class
+                    ).setParameter("studentId", idCard)
                     .getResultList();
         }catch (Exception e) {
             System.out.println(e.getMessage());

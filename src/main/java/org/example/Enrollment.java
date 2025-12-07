@@ -71,7 +71,9 @@ public class Enrollment {
     public boolean checkEnrollment(String idCard, int courseCode) {
         try(Session session = SessionFactory.getSessionFactory().openSession()) {
             Long count = session.createQuery(
-                    "FROM Enrollment e WHERE e.student.idcard = :studentId AND e.course.id = :courseId",
+                    "FROM Enrollment e " +
+                            "WHERE e.student.idcard = :studentId " +
+                            "AND e.course.id = :courseId",
                     Long.class
             )
             .setParameter("studentId", idCard)
