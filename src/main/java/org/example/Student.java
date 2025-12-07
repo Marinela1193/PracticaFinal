@@ -150,8 +150,18 @@ public class Student {
     public boolean completedCourse(String idCard, int courseId) {
         try (Session session = SessionFactory.getSessionFactory().openSession()) {
             Long count = session.createQuery(
-                            "SELECT COUNT(s) FROM Subject s WHERE s.course.id = :courseId AND " +
-                                    "s.id NOT IN (SELECT sc.subject.id FROM Score sc WHERE sc.student.idcard = :studentId AND sc.score >= 5)",
+                            "SELECT COUNT(sub) " +
+                                    "FROM Subject sub " +
+                                    "JOIN SubjectCours c " +
+                                    "WHERE c.id = :courseId " +
+                                    "AND sub.id NOT IN (" +
+                                    "    SELECT s.subject.id " +
+                                    "    FROM Score s " +
+                                    "    JOIN s.enrollment e " +
+                                    "    JOIN e.student st " +
+                                    "    WHERE st.idcard = :studentId " +
+                                    "    AND s.score >= 5" +
+                                    ")",
                             Long.class)
                     .setParameter("courseId", courseId)
                     .setParameter("studentId", idCard)
@@ -161,6 +171,24 @@ public class Student {
         } catch (Exception e) {
             System.err.println("Error checking if student completed course: " + e.getMessage());
             return false;
+        }
+    }
+
+    public List<Score> studentInfo(String idCard){
+        try(Session session = SessionFactory.getSessionFactory().openSession()){
+            return session.createQuery(
+                            "SELECT sc " +
+                                    "FROM Score sc " +
+                                    "JOIN sc.enrollment e " +
+                                    "JOIN e.student st " +
+                                    "JOIN sc.subject sub " +
+                                    "WHERE st.idcard = :studentId " +
+                                    "ORDER BY e.year DESC",
+                            Score.class
+                    ).setParameter("studentId", idCard)
+                    .getResultList();
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
         }
     }
 }

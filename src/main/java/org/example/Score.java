@@ -74,5 +74,24 @@ public class Score {
         }
     }
 
+    public void printScores(List<Score> scores){
+        Transaction transaction = null;
+        try (Session session = SessionFactory.getSessionFactory().openSession()) {
+            System.out.println("Year      Subjets                            Score");
+            System.out.println("---------------------------------------------------");
+            for (Score s : scores) {
+                int year = s.getEnrollment().getYear();
+                String subject = s.getSubject().getName();
+                int score = s.getScore();
+                System.out.println(year + " " + subject + " " + score);
+                session.persist(s);
+            }
+            transaction.commit();
+        }catch (Exception e) {
+            transaction.rollback();
+            e.printStackTrace();
+        }
+    }
+
 
 }
